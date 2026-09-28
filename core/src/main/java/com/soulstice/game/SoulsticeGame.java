@@ -7,6 +7,7 @@ public class SoulsticeGame extends Game {
 
     public String playerName = "";
     public int unlockedLevel = 1;
+    public final GameSettings settings = new GameSettings();
 
     private int currentLevel = 1;
     private MazeScreen activeMaze;
@@ -33,7 +34,7 @@ public class SoulsticeGame extends Game {
     }
 
     public void showSettings(boolean fromPause) {
-        swap(new SettingsScreen(this, fromPause), !fromPause);
+        swap(new SettingsScreen(this, fromPause), true);
     }
 
     public void startLevel(int level) {
@@ -53,11 +54,19 @@ public class SoulsticeGame extends Game {
         if (pauseScreen != null && pauseScreen != activeMaze) pauseScreen.dispose();
     }
 
+    public void quitCurrentLevel() {
+        int level = currentLevel;
+        disposeActiveMaze();
+        swap(new GameOverScreen(this, level), true);
+    }
+
     private void onLevelWon() {
         if (currentLevel >= unlockedLevel && unlockedLevel < 21) {
             unlockedLevel = currentLevel + 1;
         }
-        showLevelMap();
+        int level = currentLevel;
+        disposeActiveMaze();
+        swap(new LevelCompleteScreen(this, level), true);
     }
 
     private void disposeActiveMaze() {

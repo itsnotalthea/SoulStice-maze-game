@@ -1,7 +1,6 @@
 package com.soulstice.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,14 +12,16 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class PauseMenuScreen implements Screen {
+public class LevelCompleteScreen implements Screen {
 
     private static final float W = 1024f;
     private static final float H = 768f;
+    private static final int TOTAL_LEVELS = 21;
     private static final Color BG  = new Color(0.20f, 0.13f, 0.09f, 1f);
     private static final Color BOX = new Color(1f, 0.95f, 0.78f, 1f);
 
     private final SoulsticeGame game;
+    private final int level;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -28,10 +29,11 @@ public class PauseMenuScreen implements Screen {
     private SpriteBatch batch;
     private BitmapFont font;
 
-    private UIButton unpauseButton, optionsButton, quitButton;
+    private UIButton mainMenuButton, nextButton;
 
-    public PauseMenuScreen(SoulsticeGame game) {
+    public LevelCompleteScreen(SoulsticeGame game, int level) {
         this.game = game;
+        this.level = level;
     }
 
     @Override
@@ -45,25 +47,22 @@ public class PauseMenuScreen implements Screen {
         batch = new SpriteBatch();
         font = new BitmapFont();
 
-        unpauseButton = new UIButton(W / 2f - 90f, 400f, 180f, 45f, "UNPAUSE");
-        optionsButton = new UIButton(W / 2f - 90f, 340f, 180f, 45f, "OPTIONS");
-        quitButton    = new UIButton(W / 2f - 90f, 280f, 180f, 45f, "QUIT");
+        mainMenuButton = new UIButton(W / 2f - 200f, 290f, 180f, 45f, "MAIN MENU");
+        String nextLabel = level < TOTAL_LEVELS ? "NEXT LEVEL" : "LEVEL MAP";
+        nextButton = new UIButton(W / 2f + 20f, 290f, 180f, 45f, nextLabel);
     }
 
     @Override
     public void render(float delta) {
-        if (quitButton.isClicked()){
-            game.quitCurrentLevel();
+        mainMenuButton.update(viewport);
+        nextButton.update(viewport);
+
+        if (mainMenuButton.isClicked()) { game.showMainMenu(); return; }
+        if (nextButton.isClicked()) {
+            if (level < TOTAL_LEVELS) game.startLevel(level + 1);
+            else game.showLevelMap();
             return;
         }
-
-        unpauseButton.update(viewport);
-        optionsButton.update(viewport);
-        quitButton.update(viewport);
-
-        if (unpauseButton.isClicked()) { game.resumeLevel(); return; }
-        if (optionsButton.isClicked()) { game.showSettings(true); return; }
-        if (quitButton.isClicked())    { game.showMainMenu(); return; }
 
         Gdx.gl.glClearColor(BG.r, BG.g, BG.b, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -74,19 +73,23 @@ public class PauseMenuScreen implements Screen {
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         shapes.setColor(BOX);
-        shapes.rect(W / 2f - 150f, 250f, 300f, 260f);
+        shapes.rect(W / 2f - 260f, 240f, 520f, 280f);
         shapes.end();
 
         batch.begin();
-        font.getData().setScale(2f);
+        font.getData().setScale(2.2f);
         font.setColor(Color.BLACK);
-        GlyphLayout t = new GlyphLayout(font, "Pause");
-        font.draw(batch, "Pause", (W - t.width) / 2f, 490f);
+        GlyphLayout t = new GlyphLayout(font, "LEVEL COMPLETE!");
+        font.draw(batch, "LEVEL COMPLETE!", (W - t.width) / 2f, 490f);
+
+        font.getData().setScale(1.3f);
+        String sub = "Level " + level + " cleared";
+        GlyphLayout s = new GlyphLayout(font, sub);
+        font.draw(batch, sub, (W - s.width) / 2f, 420f);
         batch.end();
 
-        unpauseButton.draw(shapes, batch, font);
-        optionsButton.draw(shapes, batch, font);
-        quitButton.draw(shapes, batch, font);
+        mainMenuButton.draw(shapes, batch, font);
+        nextButton.draw(shapes, batch, font);
     }
 
     @Override
