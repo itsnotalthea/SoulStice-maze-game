@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -16,14 +17,17 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 public class MazeScreen implements Screen {
 
     private static final Color COLOR_BACKGROUND = new Color(0.20f, 0.13f, 0.09f, 1f);
-    private static final Color COLOR_BODY       = new Color(0.82f, 0.65f, 0.52f, 1f);
-    private static final Color COLOR_SOUL       = new Color(0.97f, 0.92f, 0.55f, 1f);
     private static final Color COLOR_PAUSE      = new Color(0.96f, 0.60f, 0.40f, 1f);
 
     private static final float VIRTUAL_WIDTH = 1024f;
     private static final float VIRTUAL_HEIGHT = 768f;
     private static final float SCREEN_MARGIN = 15f;
     private static final float MOVE_DURATION = 0.12f;
+    private static final float SOUL_FRAME_DURATION = 0.15f;
+
+    // body sheet columns: idle, right-step, idle, left-step
+    private static final int[] WALK_CYCLE = {0, 1, 0, 3};
+    private static final int SPRITE_SIZE = 16;
 
     private static final float PAUSE_X = VIRTUAL_WIDTH - 45f;
     private static final float PAUSE_Y = VIRTUAL_HEIGHT - 45f;
@@ -42,6 +46,15 @@ public class MazeScreen implements Screen {
     private SpriteBatch spriteBatch;
     private Texture wallTexture;
     private Texture cellTexture;
+    private Texture bodyTexture;
+    private Texture soulTexture;
+
+    private TextureRegion[][] bodyFrames;
+    private TextureRegion[][] soulFrames;
+
+    private Direction bodyFacing = Direction.DOWN;
+    private float bodyWalkClock = 0f;
+    private float soulAnimClock = 0f;
 
     private float cellPixelSize;
     private float mazeOriginX, mazeOriginY;
@@ -84,6 +97,14 @@ public class MazeScreen implements Screen {
         spriteBatch = new SpriteBatch();
         wallTexture = new Texture("walls.png");
         cellTexture = new Texture("cells.png");
+        bodyTexture = new Texture("body.png");
+        soulTexture = new Texture("soul.png");
+
+        // 16x16 pixel art scaled up to a whole cell.
+        bodyTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        soulTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        bodyFrames = TextureRegion.split(bodyTexture, SPRITE_SIZE, SPRITE_SIZE);
+        soulFrames = TextureRegion.split(soulTexture, SPRITE_SIZE, SPRITE_SIZE);
 
         computeMazeLayout();
     }
@@ -145,6 +166,9 @@ public class MazeScreen implements Screen {
         Direction direction = inputHandler.pollDirection();
         if (direction == null) return;
 
+        // turn first, so the sprite reacts even when a wall blocks the move
+        bodyFacing = direction;
+
         GridPoint bodyBefore = gameplay.getBodyPos();
         GridPoint soulBefore = gameplay.getSoulPos();
 
@@ -176,6 +200,9 @@ public class MazeScreen implements Screen {
     }
 
     private void updateAnimations(float delta) {
+        if (bodyAnimating) bodyWalkClock += delta;
+        soulAnimClock += delta;
+
         if (bodyAnimating) {
             bodyMoveTimer += delta;
             float t = Math.min(bodyMoveTimer / MOVE_DURATION, 1f);
@@ -230,18 +257,37 @@ public class MazeScreen implements Screen {
     }
 
     private void drawEntities() {
-        shapeRenderer.setProjectionMatrix(camera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        float spriteSize = cellPixelSize * 0.95f;
 
-        float radius = cellPixelSize * 0.3f;
+        int bodyFrame = 0;
+        if (bodyAnimating) {
+            int step = (int) (bodyWalkClock / (MOVE_DURATION * 0.5f));
+            bodyFrame = WALK_CYCLE[step % WALK_CYCLE.length];
+        }
+        int soulFrame = (int) (soulAnimClock / SOUL_FRAME_DURATION) % soulFrames[0].length;
 
-        shapeRenderer.setColor(COLOR_BODY);
-        shapeRenderer.circle(cellCenterX(bodyDrawCol), cellCenterY(bodyDrawRow), radius);
+        spriteBatch.setProjectionMatrix(camera.combined);
+        spriteBatch.begin();
+        drawSprite(bodyFrames[directionRow(bodyFacing)][bodyFrame],
+                   bodyDrawCol, bodyDrawRow, spriteSize);
+        drawSprite(soulFrames[0][soulFrame], soulDrawCol, soulDrawRow, spriteSize);
+        spriteBatch.end();
+    }
 
-        shapeRenderer.setColor(COLOR_SOUL);
-        shapeRenderer.circle(cellCenterX(soulDrawCol), cellCenterY(soulDrawRow), radius);
+    private void drawSprite(TextureRegion region, float col, float row, float size) {
+        float x = cellCenterX(col) - (size / 2f);
+        float y = cellCenterY(row) - (size / 2f);
+        spriteBatch.draw(region, x, y, size, size);
+    }
 
-        shapeRenderer.end();
+    // Sheet rows are ordered down, up, left, right.
+    private static int directionRow(Direction direction) {
+        switch (direction) {
+            case UP:    return 1;
+            case LEFT:  return 2;
+            case RIGHT: return 3;
+            default:    return 0;
+        }
     }
 
     private void drawPauseButton() {
@@ -270,5 +316,7 @@ public class MazeScreen implements Screen {
         spriteBatch.dispose();
         wallTexture.dispose();
         cellTexture.dispose();
+        bodyTexture.dispose();
+        soulTexture.dispose();
     }
 }
