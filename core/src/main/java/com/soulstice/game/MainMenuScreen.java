@@ -7,8 +7,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -27,6 +27,9 @@ public class MainMenuScreen implements Screen {
     private ShapeRenderer shapes;
     private SpriteBatch batch;
     private BitmapFont font;
+
+    // GAME LOGO
+    private Texture logo;
 
     private UIButton startButton, settingsButton, quitButton;
     private UIButton confirmButton;
@@ -48,6 +51,9 @@ public class MainMenuScreen implements Screen {
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
         font = new BitmapFont();
+
+        // LOAD GAME LOGO
+        logo = new Texture(Gdx.files.internal("logo.png"));
 
         startButton    = new UIButton(W / 2f - 100f, 340f, 200f, 50f, "START");
         settingsButton = new UIButton(W / 2f - 100f, 270f, 200f, 50f, "SETTINGS");
@@ -107,10 +113,12 @@ public class MainMenuScreen implements Screen {
             }
             return;
         }
+
         if (settingsButton.isClicked()) {
             game.showSettings(false);
             return;
         }
+
         if (quitButton.isClicked()) {
             Gdx.app.exit();
             return;
@@ -121,11 +129,20 @@ public class MainMenuScreen implements Screen {
         shapes.rect(W / 2f - 210f, 480f, 420f, 170f);
         shapes.end();
 
+        // DRAW GAME LOGO
         batch.begin();
-        font.getData().setScale(1.5f);
-        font.setColor(Color.WHITE);
-        GlyphLayout logo = new GlyphLayout(font, "INSERT GAME LOGO HERE :D");
-        font.draw(batch, "INSERT GAME LOGO HERE :D", (W - logo.width) / 2f, 570f);
+
+        float logoWidth = 500f;
+        float logoHeight = 200f;
+
+        batch.draw(
+            logo,
+            (W - logoWidth) / 2f,
+            500f,
+            logoWidth,
+            logoHeight
+        );
+
         batch.end();
 
         startButton.draw(shapes, batch, font);
@@ -135,6 +152,7 @@ public class MainMenuScreen implements Screen {
 
     private void renderNamePrompt() {
         confirmButton.update(viewport);
+
         if (confirmButton.isClicked()) {
             confirmName();
             return;
@@ -146,15 +164,32 @@ public class MainMenuScreen implements Screen {
         shapes.end();
 
         batch.begin();
+
         font.getData().setScale(2f);
         font.setColor(Color.BLACK);
-        GlyphLayout title = new GlyphLayout(font, "What should we call you?");
-        font.draw(batch, "What should we call you?", (W - title.width) / 2f, 460f);
+
+        font.draw(
+            batch,
+            "What should we call you?",
+            W / 2f - 180f,
+            460f
+        );
 
         font.getData().setScale(1.5f);
+
         String shown = nameInput.length() == 0 ? "ENTER NAME" : nameInput.toString();
-        font.setColor(nameInput.length() == 0 ? Color.LIGHT_GRAY : Color.BLACK);
-        font.draw(batch, shown, W / 2f - 140f, 372f);
+
+        font.setColor(
+            nameInput.length() == 0 ? Color.LIGHT_GRAY : Color.BLACK
+        );
+
+        font.draw(
+            batch,
+            shown,
+            W / 2f - 140f,
+            372f
+        );
+
         batch.end();
 
         confirmButton.draw(shapes, batch, font);
@@ -178,5 +213,8 @@ public class MainMenuScreen implements Screen {
         shapes.dispose();
         batch.dispose();
         font.dispose();
+
+        // DISPOSE LOGO
+        logo.dispose();
     }
 }
