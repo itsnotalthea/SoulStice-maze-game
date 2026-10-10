@@ -21,6 +21,7 @@ public class GameOverScreen implements Screen {
 
     private final SoulsticeGame game;
     private final int level;
+    private final boolean timeUp;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -31,8 +32,13 @@ public class GameOverScreen implements Screen {
     private UIButton mainMenuButton, playAgainButton;
 
     public GameOverScreen(SoulsticeGame game, int level) {
+        this(game, level, false);
+    }
+
+    public GameOverScreen(SoulsticeGame game, int level, boolean timeUp) {
         this.game = game;
         this.level = level;
+        this.timeUp = timeUp;
     }
 
     @Override
@@ -73,11 +79,14 @@ public class GameOverScreen implements Screen {
         batch.begin();
         font.getData().setScale(2.2f);
         font.setColor(Color.BLACK);
-        GlyphLayout t = new GlyphLayout(font, "GAME OVER!");
-        font.draw(batch, "GAME OVER!", (W - t.width) / 2f, 490f);
+        String title = timeUp ? "TIME'S UP!" : "GAME OVER!";
+        GlyphLayout t = new GlyphLayout(font, title);
+        font.draw(batch, title, (W - t.width) / 2f, 490f);
 
         font.getData().setScale(1.3f);
-        String sub = "Level " + level + " was abandoned";
+        String sub = timeUp
+            ? "Time ran out on Level " + level
+            : "Level " + level + " was abandoned";
         GlyphLayout s = new GlyphLayout(font, sub);
         font.draw(batch, sub, (W - s.width) / 2f, 420f);
         batch.end();

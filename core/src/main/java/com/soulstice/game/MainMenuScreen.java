@@ -19,6 +19,8 @@ public class MainMenuScreen implements Screen {
     private static final float W = 1024f;
     private static final float H = 768f;
     private static final Color BG = new Color(0.76f, 1f, 0.47f, 1f);
+    private static final Color LOGO_FRAME = new Color(0.12f, 0.25f, 0.12f, 1f);
+    private static final Color LOGO_SURFACE = new Color(0.94f, 0.91f, 0.73f, 1f);
 
     private final SoulsticeGame game;
 
@@ -54,6 +56,7 @@ public class MainMenuScreen implements Screen {
 
         // LOAD GAME LOGO
         logo = new Texture(Gdx.files.internal("logo.png"));
+        logo.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         startButton    = new UIButton(W / 2f - 100f, 340f, 200f, 50f, "START");
         settingsButton = new UIButton(W / 2f - 100f, 270f, 200f, 50f, "SETTINGS");
@@ -124,25 +127,33 @@ public class MainMenuScreen implements Screen {
             return;
         }
 
+        float logoCenterX = W / 2f;
+        float logoCenterY = 555f;
+        float frameRadius = 136f;
+
         shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(Color.BLACK);
-        shapes.rect(W / 2f - 210f, 480f, 420f, 170f);
+        shapes.setColor(LOGO_FRAME);
+        shapes.circle(logoCenterX, logoCenterY, frameRadius);
+        shapes.setColor(LOGO_SURFACE);
+        shapes.circle(logoCenterX, logoCenterY, frameRadius - 8f);
         shapes.end();
 
-        // DRAW GAME LOGO
+        float maxLogoSize = (frameRadius - 20f) * 2f;
+        float logoScale = Math.min(
+            maxLogoSize / logo.getWidth(),
+            maxLogoSize / logo.getHeight()
+        );
+        float logoWidth = logo.getWidth() * logoScale;
+        float logoHeight = logo.getHeight() * logoScale;
+
         batch.begin();
-
-        float logoWidth = 500f;
-        float logoHeight = 200f;
-
         batch.draw(
             logo,
-            (W - logoWidth) / 2f,
-            500f,
+            logoCenterX - logoWidth / 2f,
+            logoCenterY - logoHeight / 2f,
             logoWidth,
             logoHeight
         );
-
         batch.end();
 
         startButton.draw(shapes, batch, font);

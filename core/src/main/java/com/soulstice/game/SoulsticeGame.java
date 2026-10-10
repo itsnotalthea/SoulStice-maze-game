@@ -40,7 +40,7 @@ public class SoulsticeGame extends Game {
     public void startLevel(int level) {
         currentLevel = level;
         disposeActiveMaze();
-        activeMaze = new MazeScreen(level, this::onLevelWon, this::showPause);
+        activeMaze = new MazeScreen(level, this::onLevelWon, this::showPause, this::onTimeUp);
         swap(activeMaze, true);
     }
 
@@ -58,6 +58,12 @@ public class SoulsticeGame extends Game {
         int level = currentLevel;
         disposeActiveMaze();
         swap(new GameOverScreen(this, level), true);
+    }
+
+    private void onTimeUp() {
+        int level = currentLevel;
+        disposeActiveMaze();
+        swap(new GameOverScreen(this, level, true), true);
     }
 
     private void onLevelWon() {

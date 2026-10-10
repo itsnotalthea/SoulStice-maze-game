@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -18,6 +20,9 @@ public class MazeScreen implements Screen {
 
     private static final Color COLOR_BACKGROUND = new Color(0.20f, 0.13f, 0.09f, 1f);
     private static final Color COLOR_PAUSE      = new Color(0.96f, 0.60f, 0.40f, 1f);
+    private static final Color COLOR_TIMER_PANEL = new Color(0.12f, 0.25f, 0.12f, 1f);
+    private static final Color COLOR_TIMER_TEXT = new Color(1f, 0.95f, 0.78f, 1f);
+    private static final Color COLOR_TIMER_URGENT = new Color(1f, 0.35f, 0.24f, 1f);
 
     private static final float VIRTUAL_WIDTH = 1024f;
     private static final float VIRTUAL_HEIGHT = 768f;
@@ -32,18 +37,23 @@ public class MazeScreen implements Screen {
     private static final float PAUSE_X = VIRTUAL_WIDTH - 45f;
     private static final float PAUSE_Y = VIRTUAL_HEIGHT - 45f;
     private static final float PAUSE_RADIUS = 20f;
+    private static final float TIMER_PANEL_WIDTH = 270f;
+    private static final float TIMER_PANEL_HEIGHT = 46f;
 
+    private final int level;
     private final MazeGenerator maze;
     private final GameplayController gameplay;
     private final InputHandler inputHandler;
 
     private final Runnable onWin;
     private final Runnable onPause;
+    private final Runnable onTimeUp;
 
     private OrthographicCamera camera;
     private Viewport viewport;
     private ShapeRenderer shapeRenderer;
     private SpriteBatch spriteBatch;
+    private BitmapFont font;
     private Texture wallTexture;
     private Texture cellTexture;
     private Texture bodyTexture;
@@ -70,13 +80,19 @@ public class MazeScreen implements Screen {
     private boolean soulAnimating = false;
 
     private boolean winFired = false;
+    private boolean timeUpFired = false;
+    private boolean skipNextTimerDelta = false;
+    private float timeRemaining;
 
-    public MazeScreen(int level, Runnable onWin, Runnable onPause) {
+    public MazeScreen(int level, Runnable onWin, Runnable onPause, Runnable onTimeUp) {
+        this.level = level;
         this.maze = new MazeGenerator(level);
         this.gameplay = new GameplayController(maze);
         this.inputHandler = new InputHandler();
         this.onWin = onWin;
         this.onPause = onPause;
+        this.onTimeUp = onTimeUp;
+        this.timeRemaining = timeLimitForLevel(level);
 
         GridPoint bodyStart = gameplay.getBodyPos();
         GridPoint soulStart = gameplay.getSoulPos();
@@ -95,6 +111,7 @@ public class MazeScreen implements Screen {
 
         shapeRenderer = new ShapeRenderer();
         spriteBatch = new SpriteBatch();
+        font = new BitmapFont();
         wallTexture = new Texture("walls.png");
         cellTexture = new Texture("cells.png");
         bodyTexture = new Texture("body.png");
@@ -123,6 +140,17 @@ public class MazeScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        if (timeUpFired || winFired) return;
+
+        float timerDelta = skipNextTimerDelta ? 0f : delta;
+        skipNextTimerDelta = false;
+        timeRemaining = Math.max(0f, timeRemaining - timerDelta);
+        if (timeRemaining <= 0f) {
+            timeUpFired = true;
+            onTimeUp.run();
+            return;
+        }
+
         handleInput();
         updateAnimations(delta);
 
@@ -133,12 +161,53 @@ public class MazeScreen implements Screen {
 
         drawWalls();
         drawEntities();
+        drawTimer();
         drawPauseButton();
 
         if (gameplay.isWon() && !bodyAnimating && !soulAnimating && !winFired) {
             winFired = true;
             onWin.run();
         }
+    }
+
+    static int timeLimitForLevel(int level) {
+        if (level <= 3) return 35;
+        if (level <= 6) return 30;
+        if (level <= 9) return 25;
+        if (level <= 12) return 20;
+        if (level <= 15) return 15;
+        return 10;
+    }
+
+    private void drawTimer() {
+        float panelX = (VIRTUAL_WIDTH - TIMER_PANEL_WIDTH) / 2f;
+        float panelY = VIRTUAL_HEIGHT - TIMER_PANEL_HEIGHT - 12f;
+        int displayedSeconds = (int) Math.ceil(timeRemaining);
+        String timerText = String.format(
+            java.util.Locale.ROOT,
+            "LEVEL %d   TIME 00:%02d",
+            level,
+            displayedSeconds
+        );
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(COLOR_TIMER_PANEL);
+        shapeRenderer.rect(panelX, panelY, TIMER_PANEL_WIDTH, TIMER_PANEL_HEIGHT);
+        shapeRenderer.end();
+
+        font.getData().setScale(1.2f);
+        font.setColor(displayedSeconds <= 5 ? COLOR_TIMER_URGENT : COLOR_TIMER_TEXT);
+        GlyphLayout layout = new GlyphLayout(font, timerText);
+        spriteBatch.setProjectionMatrix(camera.combined);
+        spriteBatch.begin();
+        font.draw(
+            spriteBatch,
+            timerText,
+            panelX + (TIMER_PANEL_WIDTH - layout.width) / 2f,
+            panelY + (TIMER_PANEL_HEIGHT + layout.height) / 2f
+        );
+        spriteBatch.end();
     }
 
     private void handleInput() {
@@ -306,14 +375,15 @@ public class MazeScreen implements Screen {
         viewport.update(width, height, true);
     }
 
-    @Override public void pause() {}
-    @Override public void resume() {}
+    @Override public void pause() { skipNextTimerDelta = true; }
+    @Override public void resume() { skipNextTimerDelta = true; }
     @Override public void hide() {}
 
     @Override
     public void dispose() {
         shapeRenderer.dispose();
         spriteBatch.dispose();
+        font.dispose();
         wallTexture.dispose();
         cellTexture.dispose();
         bodyTexture.dispose();
