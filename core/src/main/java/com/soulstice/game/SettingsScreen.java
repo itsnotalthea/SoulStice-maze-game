@@ -20,12 +20,12 @@ public class SettingsScreen implements Screen {
     private static final float W = 1024f;
     private static final float H = 768f;
 
-    private static final Color LIGHT_BG = new Color(0.76f, 1f, 0.47f, 1f);
-    private static final Color DARK_BG  = new Color(0.14f, 0.16f, 0.12f, 1f);
-    private static final Color BOX      = new Color(1f, 0.95f, 0.78f, 1f);
+    private static final Color BG   = new Color(0.22f, 0.38f, 0f, 1f);
+    private static final Color TEXT = new Color(0.93f, 0.93f, 0.69f, 1f);
+    private static final Color BOX  = new Color(1f, 0.95f, 0.78f, 1f);
 
     private static final float SLIDER_X = 560f;
-    private static final float SLIDER_Y = 505f;
+    private static final float SLIDER_Y = 575f;
     private static final float SLIDER_W = 260f;
 
     private final SoulsticeGame game;
@@ -37,7 +37,7 @@ public class SettingsScreen implements Screen {
     private SpriteBatch batch;
     private BitmapFont font;
 
-    private UIButton themeButton, soundButton, renameButton, devInfoButton, backButton;
+    private UIButton soundButton, renameButton, devInfoButton, backButton;
     private UIButton renameConfirm, renameCancel, devInfoClose;
 
     private boolean renaming = false;
@@ -61,10 +61,9 @@ public class SettingsScreen implements Screen {
         batch = new SpriteBatch();
         font = new BitmapFont();
 
-        themeButton   = new UIButton(SLIDER_X, 570f, 160f, 40f, "");
-        soundButton   = new UIButton(SLIDER_X, 430f, 160f, 40f, "");
-        renameButton  = new UIButton(SLIDER_X, 360f, 160f, 40f, "RENAME");
-        devInfoButton = new UIButton(SLIDER_X, 290f, 160f, 40f, "DEVELOPER INFO");
+        soundButton   = new UIButton(SLIDER_X, 500f, 160f, 40f, "");
+        renameButton  = new UIButton(SLIDER_X, 430f, 160f, 40f, "RENAME");
+        devInfoButton = new UIButton(SLIDER_X, 360f, 160f, 40f, "DEVELOPER INFO");
         backButton    = new UIButton(W / 2f - 100f, 170f, 200f, 45f, "BACK");
 
         renameConfirm = new UIButton(W / 2f - 170f, 300f, 150f, 42f, "CONFIRM");
@@ -92,6 +91,7 @@ public class SettingsScreen implements Screen {
         if (name.length() > 1) {
             game.playerName = name;
             renaming = false;
+            SaveSystem.save(game);
         }
     }
 
@@ -114,7 +114,6 @@ public class SettingsScreen implements Screen {
             else { goBack(); return; }
         }
 
-        themeButton.label = s.darkMode ? "DARK" : "LIGHT";
         soundButton.label = s.soundEffects ? "ON" : "OFF";
 
         if (renaming) {
@@ -126,14 +125,12 @@ public class SettingsScreen implements Screen {
             devInfoClose.update(viewport);
             if (devInfoClose.isClicked()) showDevInfo = false;
         } else {
-            themeButton.update(viewport);
             soundButton.update(viewport);
             renameButton.update(viewport);
             devInfoButton.update(viewport);
             backButton.update(viewport);
 
-            if (themeButton.isClicked()) s.darkMode = !s.darkMode;
-            if (soundButton.isClicked()) s.soundEffects = !s.soundEffects;
+            if (soundButton.isClicked()) { s.soundEffects = !s.soundEffects; SaveSystem.save(game); }
             if (renameButton.isClicked()) {
                 nameInput.setLength(0);
                 nameInput.append(game.playerName == null ? "" : game.playerName);
@@ -145,8 +142,8 @@ public class SettingsScreen implements Screen {
             updateSlider(s);
         }
 
-        Color bg = s.darkMode ? DARK_BG : LIGHT_BG;
-        Color text = s.darkMode ? Color.WHITE : Color.BLACK;
+        Color bg = BG;
+        Color text = TEXT;
 
         Gdx.gl.glClearColor(bg.r, bg.g, bg.b, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -165,15 +162,13 @@ public class SettingsScreen implements Screen {
 
         font.getData().setScale(1.3f);
         font.setColor(text);
-        font.draw(batch, "Theme", 220f, 598f);
-        font.draw(batch, "Background Music", 220f, 528f);
-        font.draw(batch, "Sound Effects", 220f, 458f);
-        font.draw(batch, "SOUL Name: " + (game.playerName == null || game.playerName.isEmpty() ? "(not set)" : game.playerName), 220f, 388f);
-        font.draw(batch, "About", 220f, 318f);
+        font.draw(batch, "Background Music", 220f, 598f);
+        font.draw(batch, "Sound Effects", 220f, 528f);
+        font.draw(batch, "SOUL Name: " + (game.playerName == null || game.playerName.isEmpty() ? "(not set)" : game.playerName), 220f, 458f);
+        font.draw(batch, "About", 220f, 388f);
         font.draw(batch, "Version 0.1", W / 2f - 45f, 120f);
         batch.end();
 
-        themeButton.draw(shapes, batch, font);
         soundButton.draw(shapes, batch, font);
         renameButton.draw(shapes, batch, font);
         devInfoButton.draw(shapes, batch, font);
@@ -189,7 +184,12 @@ public class SettingsScreen implements Screen {
             && v.y >= SLIDER_Y - 15f && v.y <= SLIDER_Y + 15f) {
             draggingSlider = true;
         }
-        if (!Gdx.input.isTouched()) draggingSlider = false;
+        if (!Gdx.input.isTouched()) {
+            if (draggingSlider) {
+                draggingSlider = false;
+                SaveSystem.save(game);
+            }
+        }
         if (draggingSlider) {
             s.musicVolume = Math.max(0f, Math.min(1f, (v.x - SLIDER_X) / SLIDER_W));
         }
