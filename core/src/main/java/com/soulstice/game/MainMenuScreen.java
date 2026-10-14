@@ -18,7 +18,8 @@ public class MainMenuScreen implements Screen {
 
     private static final float W = 1024f;
     private static final float H = 768f;
-    private static final Color BG = new Color(0.76f, 1f, 0.47f, 1f);
+
+    private static final Color BG = new Color(0.22f, 0.38f, 0f, 1f);
     private static final Color LOGO_FRAME = new Color(0.12f, 0.25f, 0.12f, 1f);
     private static final Color LOGO_SURFACE = new Color(0.94f, 0.91f, 0.73f, 1f);
 
@@ -32,6 +33,7 @@ public class MainMenuScreen implements Screen {
 
     // GAME LOGO
     private Texture logo;
+    private Texture background;
 
     private UIButton startButton, settingsButton, quitButton;
     private UIButton confirmButton;
@@ -58,6 +60,10 @@ public class MainMenuScreen implements Screen {
         logo = new Texture(Gdx.files.internal("logo.png"));
         logo.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
+        // LOAD MAIN MENU BACKGROUND
+        background = new Texture(Gdx.files.internal("MainMenu_Background.png"));
+        background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         startButton    = new UIButton(W / 2f - 100f, 340f, 200f, 50f, "START");
         settingsButton = new UIButton(W / 2f - 100f, 270f, 200f, 50f, "SETTINGS");
         quitButton     = new UIButton(W / 2f - 100f, 200f, 200f, 50f, "QUIT");
@@ -83,6 +89,7 @@ public class MainMenuScreen implements Screen {
         String name = nameInput.toString().trim();
         if (name.length() > 1) {
             game.playerName = name;
+            SaveSystem.save(game);
             game.showLevelMap();
         }
     }
@@ -95,6 +102,11 @@ public class MainMenuScreen implements Screen {
 
         shapes.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
+
+        // Menu BG
+        batch.begin();
+        batch.draw(background, 0f, 0f, W, H);
+        batch.end();
 
         if (askingName) {
             renderNamePrompt();
@@ -227,5 +239,6 @@ public class MainMenuScreen implements Screen {
 
         // DISPOSE LOGO
         logo.dispose();
+        background.dispose();
     }
 }

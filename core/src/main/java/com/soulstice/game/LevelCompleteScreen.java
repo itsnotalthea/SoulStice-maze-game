@@ -5,6 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,7 +19,10 @@ public class LevelCompleteScreen implements Screen {
     private static final float H = 768f;
     private static final int TOTAL_LEVELS = 21;
     private static final Color BG  = new Color(0.20f, 0.13f, 0.09f, 1f);
-    private static final Color BOX = new Color(1f, 0.95f, 0.78f, 1f);
+    private static final float CARD_X = W / 2f - 260f;
+    private static final float CARD_Y = 240f;
+    private static final float CARD_W = 520f;
+    private static final float CARD_H = 280f;
 
     private final SoulsticeGame game;
     private final int level;
@@ -28,6 +32,7 @@ public class LevelCompleteScreen implements Screen {
     private ShapeRenderer shapes;
     private SpriteBatch batch;
     private BitmapFont font;
+    private Texture modalBackground;
 
     private UIButton mainMenuButton, nextButton;
 
@@ -46,6 +51,9 @@ public class LevelCompleteScreen implements Screen {
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
         font = new BitmapFont();
+
+        modalBackground = new Texture(Gdx.files.internal("LevelComplete_ModalBackground.png"));
+        modalBackground.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         mainMenuButton = new UIButton(W / 2f - 200f, 290f, 180f, 45f, "MAIN MENU");
         String nextLabel = level < TOTAL_LEVELS ? "NEXT LEVEL" : "LEVEL MAP";
@@ -71,21 +79,25 @@ public class LevelCompleteScreen implements Screen {
         shapes.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
 
-        shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(BOX);
-        shapes.rect(W / 2f - 260f, 240f, 520f, 280f);
-        shapes.end();
-
         batch.begin();
+
+        batch.draw(modalBackground, CARD_X, CARD_Y, CARD_W, CARD_H);
+
         font.getData().setScale(2.2f);
         font.setColor(Color.BLACK);
         GlyphLayout t = new GlyphLayout(font, "LEVEL COMPLETE!");
         font.draw(batch, "LEVEL COMPLETE!", (W - t.width) / 2f, 490f);
 
         font.getData().setScale(1.3f);
-        String sub = "Level " + level + " cleared";
-        GlyphLayout s = new GlyphLayout(font, sub);
-        font.draw(batch, sub, (W - s.width) / 2f, 420f);
+        String sub1 = "You have successfully reunited the body and soul.";
+        GlyphLayout s1 = new GlyphLayout(font, sub1);
+        font.draw(batch, sub1, (W - s1.width) / 2f, 425f);
+
+        String sub2 = level < TOTAL_LEVELS
+            ? "Proceed to the next level."
+            : "You have cleared every level!";
+        GlyphLayout s2 = new GlyphLayout(font, sub2);
+        font.draw(batch, sub2, (W - s2.width) / 2f, 388f);
         batch.end();
 
         mainMenuButton.draw(shapes, batch, font);
@@ -106,5 +118,6 @@ public class LevelCompleteScreen implements Screen {
         shapes.dispose();
         batch.dispose();
         font.dispose();
+        modalBackground.dispose();
     }
 }

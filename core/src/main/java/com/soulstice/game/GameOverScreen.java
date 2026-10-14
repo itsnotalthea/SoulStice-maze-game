@@ -17,7 +17,8 @@ public class GameOverScreen implements Screen {
     private static final float W = 1024f;
     private static final float H = 768f;
     private static final Color BG  = new Color(0.20f, 0.13f, 0.09f, 1f);
-    private static final Color BOX = new Color(1f, 0.95f, 0.78f, 1f);
+
+    private static final Color PANEL_GREEN = new Color(0.70f, 0.85f, 0.58f, 1f);
 
     private final SoulsticeGame game;
     private final int level;
@@ -72,23 +73,25 @@ public class GameOverScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(BOX);
+        shapes.setColor(PANEL_GREEN);
         shapes.rect(W / 2f - 260f, 240f, 520f, 280f);
         shapes.end();
 
         batch.begin();
         font.getData().setScale(2.2f);
         font.setColor(Color.BLACK);
-        String title = timeUp ? "TIME'S UP!" : "GAME OVER!";
+        String title = timeUp ? "TIME'S UP!" : "YOU FAILED!";
         GlyphLayout t = new GlyphLayout(font, title);
         font.draw(batch, title, (W - t.width) / 2f, 490f);
 
         font.getData().setScale(1.3f);
-        String sub = timeUp
-            ? "Time ran out on Level " + level
-            : "Level " + level + " was abandoned";
-        GlyphLayout s = new GlyphLayout(font, sub);
-        font.draw(batch, sub, (W - s.width) / 2f, 420f);
+        String sub1 = "You failed to reunite the body and soul.";
+        GlyphLayout s1 = new GlyphLayout(font, sub1);
+        font.draw(batch, sub1, (W - s1.width) / 2f, 425f);
+
+        String sub2 = "Try again.";
+        GlyphLayout s2 = new GlyphLayout(font, sub2);
+        font.draw(batch, sub2, (W - s2.width) / 2f, 388f);
         batch.end();
 
         mainMenuButton.draw(shapes, batch, font);
