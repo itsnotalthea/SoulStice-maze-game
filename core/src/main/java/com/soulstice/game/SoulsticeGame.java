@@ -14,6 +14,7 @@ public class SoulsticeGame extends Game {
 
     @Override
     public void create() {
+        SaveSystem.load(this);
         showMainMenu();
     }
 
@@ -69,6 +70,7 @@ public class SoulsticeGame extends Game {
     private void onLevelWon() {
         if (currentLevel >= unlockedLevel && unlockedLevel < 21) {
             unlockedLevel = currentLevel + 1;
+            SaveSystem.save(this);
         }
         int level = currentLevel;
         disposeActiveMaze();
