@@ -141,6 +141,8 @@ public class MainMenuScreen implements Screen {
         if (startButton.isClicked()) {
             if (game.playerName == null || game.playerName.isEmpty()) {
                 askingName = true;
+                cursorAccum = 0f;
+                cursorOn = true;
             } else {
                 game.showLevelMap();
             }
