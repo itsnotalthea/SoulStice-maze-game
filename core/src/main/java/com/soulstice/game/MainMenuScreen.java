@@ -41,6 +41,9 @@ public class MainMenuScreen implements Screen {
     private boolean askingName = false;
     private final StringBuilder nameInput = new StringBuilder();
 
+    private float cursorAccum = 0f;
+    private boolean cursorOn = true;
+
     public MainMenuScreen(SoulsticeGame game) {
         this.game = game;
     }
@@ -75,10 +78,18 @@ public class MainMenuScreen implements Screen {
                 if (!askingName) return false;
                 if (c == '\b') {
                     if (nameInput.length() > 0) nameInput.deleteCharAt(nameInput.length() - 1);
+                    // Reset cursor when name becomes empty
+                    if (nameInput.length() == 0) {
+                        cursorOn = true;
+                        cursorAccum = 0f;
+                    }
                 } else if (c == '\r' || c == '\n') {
                     confirmName();
                 } else if (c >= 32 && c < 127 && nameInput.length() < 16) {
                     nameInput.append(c);
+                    // Ensure cursor is on when a character is typed
+                    cursorOn = true;
+                    cursorAccum = 0f;
                 }
                 return true;
             }
@@ -102,6 +113,13 @@ public class MainMenuScreen implements Screen {
 
         shapes.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
+
+        // Blinking cursor
+        cursorAccum += delta;
+        if (cursorAccum > 0.5f) {
+            cursorAccum -= 0.5f;
+            cursorOn = !cursorOn;
+        }
 
         // Menu BG
         batch.begin();
@@ -200,7 +218,8 @@ public class MainMenuScreen implements Screen {
 
         font.getData().setScale(1.5f);
 
-        String shown = nameInput.length() == 0 ? "ENTER NAME" : nameInput.toString();
+        String shown = nameInput.length() == 0 ? "ENTER NAME"
+            : nameInput.toString() + (cursorOn ? "|" : "");
 
         font.setColor(
             nameInput.length() == 0 ? Color.LIGHT_GRAY : Color.BLACK
