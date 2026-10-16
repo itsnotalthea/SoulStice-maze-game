@@ -44,6 +44,7 @@ public class GameOverScreen implements Screen {
 
     @Override
     public void show() {
+        game.audio.playLoseSound();
         camera = new OrthographicCamera();
         viewport = new FitViewport(W, H, camera);
         camera.position.set(W / 2f, H / 2f, 0);

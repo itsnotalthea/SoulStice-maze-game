@@ -43,6 +43,7 @@ public class LevelCompleteScreen implements Screen {
 
     @Override
     public void show() {
+        game.audio.playWinSound();
         camera = new OrthographicCamera();
         viewport = new FitViewport(W, H, camera);
         camera.position.set(W / 2f, H / 2f, 0);

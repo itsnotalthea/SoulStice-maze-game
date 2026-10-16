@@ -192,6 +192,7 @@ public class SettingsScreen implements Screen {
         }
         if (draggingSlider) {
             s.musicVolume = Math.max(0f, Math.min(1f, (v.x - SLIDER_X) / SLIDER_W));
+            game.audio.updateMusicVolume();
         }
     }
 

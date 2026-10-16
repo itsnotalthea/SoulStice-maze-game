@@ -8,6 +8,7 @@ public class SoulsticeGame extends Game {
     public String playerName = "";
     public int unlockedLevel = 1;
     public final GameSettings settings = new GameSettings();
+    public AudioManager audio;
 
     private int currentLevel = 1;
     private MazeScreen activeMaze;
@@ -15,6 +16,8 @@ public class SoulsticeGame extends Game {
     @Override
     public void create() {
         SaveSystem.load(this);
+        audio = new AudioManager(settings);
+
         showMainMenu();
     }
 
@@ -27,11 +30,15 @@ public class SoulsticeGame extends Game {
     public void showMainMenu() {
         disposeActiveMaze();
         swap(new MainMenuScreen(this), true);
+        audio.playMenuMusic();
+
     }
 
     public void showLevelMap() {
         disposeActiveMaze();
         swap(new LevelMapScreen(this), true);
+        audio.playMenuMusic();
+
     }
 
     public void showSettings(boolean fromPause) {
@@ -43,26 +50,33 @@ public class SoulsticeGame extends Game {
         disposeActiveMaze();
         activeMaze = new MazeScreen(level, this::onLevelWon, this::showPause, this::onTimeUp);
         swap(activeMaze, true);
+        audio.playGameplayMusic();
     }
 
     public void showPause() {
         setScreen(new PauseMenuScreen(this));
+        audio.pauseGameplayMusic();
+
     }
 
     public void resumeLevel() {
         Screen pauseScreen = getScreen();
         setScreen(activeMaze);
+        audio.resumeGameplayMusic();
+
         if (pauseScreen != null && pauseScreen != activeMaze) pauseScreen.dispose();
     }
 
     public void quitCurrentLevel() {
         int level = currentLevel;
+        audio.pauseGameplayMusic();
         disposeActiveMaze();
         swap(new GameOverScreen(this, level), true);
     }
 
     private void onTimeUp() {
         int level = currentLevel;
+        audio.pauseGameplayMusic();
         disposeActiveMaze();
         swap(new GameOverScreen(this, level, true), true);
     }
@@ -83,4 +97,15 @@ public class SoulsticeGame extends Game {
         }
         activeMaze = null;
     }
+
+    @Override
+    public void dispose() {
+        if (audio != null) {
+            audio.dispose();
+        }
+
+        if (getScreen() != null) {
+            getScreen().dispose();
+        }
+    }    
 }
