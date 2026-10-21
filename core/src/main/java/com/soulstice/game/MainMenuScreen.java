@@ -34,6 +34,9 @@ public class MainMenuScreen implements Screen {
     // GAME LOGO
     private Texture logo;
     private Texture background;
+    private Texture startButtonTexture;
+    private Texture settingsButtonTexture;
+    private Texture quitButtonTexture;
 
     private UIButton startButton, settingsButton, quitButton;
     private UIButton confirmButton;
@@ -67,9 +70,22 @@ public class MainMenuScreen implements Screen {
         background = new Texture(Gdx.files.internal("MainMenu_Background.png"));
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        startButton    = new UIButton(W / 2f - 100f, 340f, 200f, 50f, "START");
-        settingsButton = new UIButton(W / 2f - 100f, 270f, 200f, 50f, "SETTINGS");
-        quitButton     = new UIButton(W / 2f - 100f, 200f, 200f, 50f, "QUIT");
+        startButtonTexture = new Texture(Gdx.files.internal("start.png"));
+        settingsButtonTexture = new Texture(Gdx.files.internal("settings.png"));
+        quitButtonTexture = new Texture(Gdx.files.internal("quit.png"));
+        startButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        settingsButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        quitButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        float buttonWidth = 220f;
+        float startButtonHeight = buttonWidth * startButtonTexture.getHeight() / startButtonTexture.getWidth();
+        float settingsButtonHeight = buttonWidth * settingsButtonTexture.getHeight() / settingsButtonTexture.getWidth();
+        float quitButtonHeight = buttonWidth * quitButtonTexture.getHeight() / quitButtonTexture.getWidth();
+        float buttonCenterX = W / 2f;
+
+        startButton    = new UIButton(buttonCenterX - buttonWidth / 2f, 365f - startButtonHeight / 2f, buttonWidth, startButtonHeight, "START");
+        settingsButton = new UIButton(buttonCenterX - buttonWidth / 2f, 275f - settingsButtonHeight / 2f, buttonWidth, settingsButtonHeight, "SETTINGS");
+        quitButton     = new UIButton(buttonCenterX - buttonWidth / 2f, 185f - quitButtonHeight / 2f, buttonWidth, quitButtonHeight, "QUIT");
         confirmButton  = new UIButton(W / 2f - 100f, 260f, 200f, 50f, "CONFIRM");
 
         Gdx.input.setInputProcessor(new InputAdapter() {
@@ -188,9 +204,9 @@ public class MainMenuScreen implements Screen {
         );
         batch.end();
 
-        startButton.draw(shapes, batch, font);
-        settingsButton.draw(shapes, batch, font);
-        quitButton.draw(shapes, batch, font);
+        startButton.draw(batch, startButtonTexture);
+        settingsButton.draw(batch, settingsButtonTexture);
+        quitButton.draw(batch, quitButtonTexture);
     }
 
     private void renderNamePrompt() {
@@ -261,5 +277,8 @@ public class MainMenuScreen implements Screen {
         // DISPOSE LOGO
         logo.dispose();
         background.dispose();
+        startButtonTexture.dispose();
+        settingsButtonTexture.dispose();
+        quitButtonTexture.dispose();
     }
 }
