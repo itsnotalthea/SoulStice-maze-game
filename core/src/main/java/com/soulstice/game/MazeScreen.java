@@ -27,6 +27,7 @@ public class MazeScreen implements Screen {
     private static final float VIRTUAL_WIDTH = 1024f;
     private static final float VIRTUAL_HEIGHT = 768f;
     private static final float SCREEN_MARGIN = 15f;
+    private static final float MAZE_BORDER_CELL_RATIO = 0.4f;
     private static final float MOVE_DURATION = 0.12f;
     private static final float SOUL_FRAME_DURATION = 0.15f;
 
@@ -56,9 +57,14 @@ public class MazeScreen implements Screen {
     private BitmapFont font;
     private Texture wallTexture;
     private Texture cellTexture;
+    private Texture mazeBorderTexture;
     private Texture bodyTexture;
     private Texture soulTexture;
 
+    private TextureRegion mazeBorderTop;
+    private TextureRegion mazeBorderBottom;
+    private TextureRegion mazeBorderLeft;
+    private TextureRegion mazeBorderRight;
     private TextureRegion[][] bodyFrames;
     private TextureRegion[][] soulFrames;
 
@@ -114,8 +120,15 @@ public class MazeScreen implements Screen {
         font = new BitmapFont();
         wallTexture = new Texture("walls.png");
         cellTexture = new Texture("cells.png");
+        mazeBorderTexture = new Texture("maze.png");
         bodyTexture = new Texture("body.png");
         soulTexture = new Texture("soul.png");
+
+        mazeBorderTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        mazeBorderTop = new TextureRegion(mazeBorderTexture, 18, 28, 370, 34);
+        mazeBorderBottom = new TextureRegion(mazeBorderTexture, 18, 358, 370, 36);
+        mazeBorderLeft = new TextureRegion(mazeBorderTexture, 18, 28, 34, 366);
+        mazeBorderRight = new TextureRegion(mazeBorderTexture, 352, 28, 36, 366);
 
         // 16x16 pixel art scaled up to a whole cell.
         bodyTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
@@ -128,10 +141,10 @@ public class MazeScreen implements Screen {
 
     private void computeMazeLayout() {
         int gridSize = maze.getSize();
-        float availableWidth = VIRTUAL_WIDTH - (SCREEN_MARGIN * 2);
-        float availableHeight = VIRTUAL_HEIGHT - (SCREEN_MARGIN * 2);
-
-        cellPixelSize = Math.min(availableWidth, availableHeight) / gridSize;
+        cellPixelSize = Math.min(
+            (VIRTUAL_WIDTH - SCREEN_MARGIN * 2f) / (gridSize + MAZE_BORDER_CELL_RATIO * 2f),
+            (VIRTUAL_HEIGHT - SCREEN_MARGIN * 2f) / (gridSize + MAZE_BORDER_CELL_RATIO * 2f)
+        );
 
         float mazePixelSize = cellPixelSize * gridSize;
         mazeOriginX = (VIRTUAL_WIDTH - mazePixelSize) / 2f;
@@ -160,6 +173,7 @@ public class MazeScreen implements Screen {
         viewport.apply();
 
         drawWalls();
+        drawMazeBorder();
         drawEntities();
         drawTimer();
         drawPauseButton();
@@ -207,6 +221,21 @@ public class MazeScreen implements Screen {
             panelX + (TIMER_PANEL_WIDTH - layout.width) / 2f,
             panelY + (TIMER_PANEL_HEIGHT + layout.height) / 2f
         );
+        spriteBatch.end();
+    }
+
+    private void drawMazeBorder() {
+        float borderSize = cellPixelSize * MAZE_BORDER_CELL_RATIO;
+        float mazeWidth = cellPixelSize * maze.getSize();
+        float left = mazeOriginX - borderSize;
+        float bottom = mazeOriginY - borderSize;
+
+        spriteBatch.setProjectionMatrix(camera.combined);
+        spriteBatch.begin();
+        spriteBatch.draw(mazeBorderTop, left, mazeOriginY + mazeWidth, mazeWidth, borderSize);
+        spriteBatch.draw(mazeBorderBottom, left, bottom - borderSize * 0.15f, mazeWidth, borderSize);
+        spriteBatch.draw(mazeBorderLeft, left, mazeOriginY, borderSize, mazeWidth);
+        spriteBatch.draw(mazeBorderRight, mazeOriginX + mazeWidth, mazeOriginY, borderSize, mazeWidth);
         spriteBatch.end();
     }
 
@@ -386,6 +415,7 @@ public class MazeScreen implements Screen {
         font.dispose();
         wallTexture.dispose();
         cellTexture.dispose();
+        mazeBorderTexture.dispose();
         bodyTexture.dispose();
         soulTexture.dispose();
     }

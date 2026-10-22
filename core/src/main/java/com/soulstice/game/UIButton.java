@@ -2,6 +2,7 @@ package com.soulstice.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +14,7 @@ public class UIButton {
 
     private static final Color NORMAL = new Color(1f, 1f, 1f, 1f);
     private static final Color HOVER  = new Color(0.85f, 0.85f, 0.85f, 1f);
+    private static final float HOVER_SCALE = 1.06f;
 
     public final float x, y, width, height;
     public String label;
@@ -46,6 +48,17 @@ public class UIButton {
         font.setColor(Color.BLACK);
         GlyphLayout layout = new GlyphLayout(font, label);
         font.draw(sb, label, x + (width - layout.width) / 2f, y + (height + layout.height) / 2f);
+        sb.end();
+    }
+
+    public void draw(SpriteBatch sb, Texture texture) {
+        sb.begin();
+        float drawWidth = width * (hovered ? HOVER_SCALE : 1f);
+        float drawHeight = height * (hovered ? HOVER_SCALE : 1f);
+        sb.setColor(NORMAL);
+        sb.draw(texture, x - (drawWidth - width) / 2f, y - (drawHeight - height) / 2f + (hovered ? 2f : 0f),
+            drawWidth, drawHeight);
+        sb.setColor(Color.WHITE);
         sb.end();
     }
 }
