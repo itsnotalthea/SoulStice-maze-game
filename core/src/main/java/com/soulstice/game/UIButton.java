@@ -18,6 +18,7 @@ public class UIButton {
 
     public final float x, y, width, height;
     public String label;
+    private Texture texture;
     private boolean hovered = false;
 
     public UIButton(float x, float y, float width, float height, String label) {
@@ -26,6 +27,10 @@ public class UIButton {
         this.width = width;
         this.height = height;
         this.label = label;
+    }
+
+    public void setTexture(Texture texture) {
+    this.texture = texture;
     }
 
     public void update(Viewport viewport) {
@@ -38,6 +43,24 @@ public class UIButton {
     }
 
     public void draw(ShapeRenderer sr, SpriteBatch sb, BitmapFont font) {
+        if (texture != null) {
+        float drawWidth = width * (hovered ? HOVER_SCALE : 1f);
+        float drawHeight = height * (hovered ? HOVER_SCALE : 1f);
+
+        sb.begin();
+        sb.setColor(Color.WHITE);
+        sb.draw(
+            texture,
+            x - (drawWidth - width) / 2f,
+            y - (drawHeight - height) / 2f,
+            drawWidth,
+            drawHeight
+        );
+
+        sb.end();
+        return;
+        }
+
         sr.begin(ShapeRenderer.ShapeType.Filled);
         sr.setColor(hovered ? HOVER : NORMAL);
         sr.rect(x, y, width, height);

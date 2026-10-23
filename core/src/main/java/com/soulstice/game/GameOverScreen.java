@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.graphics.Texture;
 
 public class GameOverScreen implements Screen {
 
@@ -31,6 +32,8 @@ public class GameOverScreen implements Screen {
     private BitmapFont font;
 
     private UIButton mainMenuButton, playAgainButton;
+    private Texture mainMenuTexture;
+    private Texture playAgainTexture;
 
     public GameOverScreen(SoulsticeGame game, int level) {
         this(game, level, false);
@@ -54,8 +57,14 @@ public class GameOverScreen implements Screen {
         batch = new SpriteBatch();
         font = new BitmapFont();
 
+        playAgainTexture = new Texture(Gdx.files.internal("playagain.png"));
+        mainMenuTexture = new Texture(Gdx.files.internal("mainmenu.png"));
+
         mainMenuButton  = new UIButton(W / 2f - 200f, 290f, 180f, 45f, "MAIN MENU");
         playAgainButton = new UIButton(W / 2f + 20f, 290f, 180f, 45f, "PLAY AGAIN");
+        playAgainButton.setTexture(playAgainTexture);
+        mainMenuButton.setTexture(mainMenuTexture);
+
     }
 
     @Override
@@ -113,5 +122,8 @@ public class GameOverScreen implements Screen {
         shapes.dispose();
         batch.dispose();
         font.dispose();
+        if (mainMenuTexture != null) mainMenuTexture.dispose();
+        if (playAgainTexture != null) playAgainTexture.dispose();
+    
     }
 }
