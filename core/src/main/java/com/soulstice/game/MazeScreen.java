@@ -38,8 +38,8 @@ public class MazeScreen implements Screen {
     private static final float PAUSE_X = VIRTUAL_WIDTH - 45f;
     private static final float PAUSE_Y = VIRTUAL_HEIGHT - 45f;
     private static final float PAUSE_RADIUS = 20f;
-    private static final float TIMER_PANEL_WIDTH = 270f;
-    private static final float TIMER_PANEL_HEIGHT = 46f;
+    private static final float TIMER_PANEL_WIDTH = 130f;
+    private static final float TIMER_PANEL_HEIGHT = 88f;
 
     private final int level;
     private final MazeGenerator maze;
@@ -194,15 +194,15 @@ public class MazeScreen implements Screen {
     }
 
     private void drawTimer() {
-        float panelX = (VIRTUAL_WIDTH - TIMER_PANEL_WIDTH) / 2f;
-        float panelY = VIRTUAL_HEIGHT - TIMER_PANEL_HEIGHT - 12f;
+        // changed: timer moved to the empty right-hand strip
+        float borderSize = cellPixelSize * MAZE_BORDER_CELL_RATIO;
+        float mazeRight = mazeOriginX + cellPixelSize * maze.getSize() + borderSize;
+        float panelX = (mazeRight + VIRTUAL_WIDTH) / 2f - TIMER_PANEL_WIDTH / 2f;
+        float panelY = (VIRTUAL_HEIGHT - TIMER_PANEL_HEIGHT) / 2f;
+
         int displayedSeconds = (int) Math.ceil(timeRemaining);
-        String timerText = String.format(
-            java.util.Locale.ROOT,
-            "LEVEL %d   TIME 00:%02d",
-            level,
-            displayedSeconds
-        );
+        String levelText = "LEVEL " + level;
+        String timeText = String.format(java.util.Locale.ROOT, "TIME 00:%02d", displayedSeconds);
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -210,17 +210,20 @@ public class MazeScreen implements Screen {
         shapeRenderer.rect(panelX, panelY, TIMER_PANEL_WIDTH, TIMER_PANEL_HEIGHT);
         shapeRenderer.end();
 
-        font.getData().setScale(1.2f);
+        font.getData().setScale(1.25f);
         font.setColor(displayedSeconds <= 5 ? COLOR_TIMER_URGENT : COLOR_TIMER_TEXT);
-        GlyphLayout layout = new GlyphLayout(font, timerText);
+        GlyphLayout levelLayout = new GlyphLayout(font, levelText);
+        GlyphLayout timeLayout = new GlyphLayout(font, timeText);
+        float lineGap = 8f;
+        float blockHeight = levelLayout.height + lineGap + timeLayout.height;
+        float textTop = panelY + (TIMER_PANEL_HEIGHT + blockHeight) / 2f;
+
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
-        font.draw(
-            spriteBatch,
-            timerText,
-            panelX + (TIMER_PANEL_WIDTH - layout.width) / 2f,
-            panelY + (TIMER_PANEL_HEIGHT + layout.height) / 2f
-        );
+        font.draw(spriteBatch, levelText,
+            panelX + (TIMER_PANEL_WIDTH - levelLayout.width) / 2f, textTop);
+        font.draw(spriteBatch, timeText,
+            panelX + (TIMER_PANEL_WIDTH - timeLayout.width) / 2f, textTop - levelLayout.height - lineGap);
         spriteBatch.end();
     }
 
