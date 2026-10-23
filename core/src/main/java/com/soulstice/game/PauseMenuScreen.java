@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -27,6 +28,9 @@ public class PauseMenuScreen implements Screen {
     private ShapeRenderer shapes;
     private SpriteBatch batch;
     private BitmapFont font;
+    private Texture unpauseButtonTexture;
+    private Texture optionsButtonTexture;
+    private Texture quitButtonTexture;
 
     private UIButton unpauseButton, optionsButton, quitButton;
 
@@ -45,18 +49,27 @@ public class PauseMenuScreen implements Screen {
         batch = new SpriteBatch();
         font = new BitmapFont();
 
-        unpauseButton = new UIButton(W / 2f - 90f, 400f, 180f, 45f, "UNPAUSE");
-        optionsButton = new UIButton(W / 2f - 90f, 340f, 180f, 45f, "OPTIONS");
-        quitButton    = new UIButton(W / 2f - 90f, 280f, 180f, 45f, "QUIT");
+        unpauseButtonTexture = new Texture(Gdx.files.internal("unpausebtn.png"));
+        optionsButtonTexture = new Texture(Gdx.files.internal("optionsbtn.png"));
+        quitButtonTexture = new Texture(Gdx.files.internal("quitbtn.png"));
+        unpauseButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        optionsButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        quitButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        float buttonWidth = 190f;
+        float buttonHeight = 62f;
+        float buttonX = (W - buttonWidth) / 2f;
+
+        unpauseButton = new UIButton(buttonX, 420f - buttonHeight / 2f, buttonWidth, buttonHeight, "UNPAUSE");
+        optionsButton = new UIButton(buttonX, 350f - buttonHeight / 2f, buttonWidth, buttonHeight, "OPTIONS");
+        quitButton = new UIButton(buttonX, 280f - buttonHeight / 2f, buttonWidth, buttonHeight, "QUIT");
+        unpauseButton.setTexture(unpauseButtonTexture);
+        optionsButton.setTexture(optionsButtonTexture);
+        quitButton.setTexture(quitButtonTexture);
     }
 
     @Override
     public void render(float delta) {
-        if (quitButton.isClicked()){
-            game.quitCurrentLevel();
-            return;
-        }
-
         unpauseButton.update(viewport);
         optionsButton.update(viewport);
         quitButton.update(viewport);
@@ -74,7 +87,7 @@ public class PauseMenuScreen implements Screen {
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         shapes.setColor(BOX);
-        shapes.rect(W / 2f - 150f, 250f, 300f, 260f);
+        shapes.rect(W / 2f - 150f, 230f, 300f, 280f);
         shapes.end();
 
         batch.begin();
@@ -103,5 +116,8 @@ public class PauseMenuScreen implements Screen {
         shapes.dispose();
         batch.dispose();
         font.dispose();
+        unpauseButtonTexture.dispose();
+        optionsButtonTexture.dispose();
+        quitButtonTexture.dispose();
     }
 }
