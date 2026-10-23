@@ -31,9 +31,9 @@ public class MazeScreen implements Screen {
     private static final float MOVE_DURATION = 0.12f;
     private static final float SOUL_FRAME_DURATION = 0.15f;
 
-    // body sheet columns: idle, right-step, idle, left-step
-    private static final int[] WALK_CYCLE = {0, 1, 0, 3};
-    private static final int SPRITE_SIZE = 16;
+    // changed: new body sheet has 2 walk frames per direction (8 rows total)
+    private static final int BODY_FRAMES_PER_DIRECTION = 2;
+    private static final int SPRITE_SIZE = 32;
 
     private static final float PAUSE_X = VIRTUAL_WIDTH - 45f;
     private static final float PAUSE_Y = VIRTUAL_HEIGHT - 45f;
@@ -130,7 +130,7 @@ public class MazeScreen implements Screen {
         mazeBorderLeft = new TextureRegion(mazeBorderTexture, 18, 28, 34, 366);
         mazeBorderRight = new TextureRegion(mazeBorderTexture, 352, 28, 36, 366);
 
-        // 16x16 pixel art scaled up to a whole cell.
+        // changed: sprites are now 32x32 (was 16x16)
         bodyTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         soulTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         bodyFrames = TextureRegion.split(bodyTexture, SPRITE_SIZE, SPRITE_SIZE);
@@ -360,15 +360,16 @@ public class MazeScreen implements Screen {
         int bodyFrame = 0;
         if (bodyAnimating) {
             int step = (int) (bodyWalkClock / (MOVE_DURATION * 0.5f));
-            bodyFrame = WALK_CYCLE[step % WALK_CYCLE.length];
+            bodyFrame = step % BODY_FRAMES_PER_DIRECTION;
         }
-        int soulFrame = (int) (soulAnimClock / SOUL_FRAME_DURATION) % soulFrames[0].length;
+        // changed: body uses direction row + walk frame; soul loops all 8 frames
+        int bodyRow = directionRow(bodyFacing) * BODY_FRAMES_PER_DIRECTION + bodyFrame;
+        int soulFrame = (int) (soulAnimClock / SOUL_FRAME_DURATION) % soulFrames.length;
 
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
-        drawSprite(bodyFrames[directionRow(bodyFacing)][bodyFrame],
-                   bodyDrawCol, bodyDrawRow, spriteSize);
-        drawSprite(soulFrames[0][soulFrame], soulDrawCol, soulDrawRow, spriteSize);
+        drawSprite(bodyFrames[bodyRow][0], bodyDrawCol, bodyDrawRow, spriteSize);
+        drawSprite(soulFrames[soulFrame][0], soulDrawCol, soulDrawRow, spriteSize);
         spriteBatch.end();
     }
 
@@ -378,7 +379,7 @@ public class MazeScreen implements Screen {
         spriteBatch.draw(region, x, y, size, size);
     }
 
-    // Sheet rows are ordered down, up, left, right.
+    // changed: sheet direction pairs are ordered down, up, left, right
     private static int directionRow(Direction direction) {
         switch (direction) {
             case UP:    return 1;
