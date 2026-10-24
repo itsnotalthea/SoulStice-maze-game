@@ -21,6 +21,8 @@ public class MainMenuScreen implements Screen {
     private static final float H = 1080f;
 
     private static final Color BG = new Color(0.22f, 0.38f, 0f, 1f);
+    private static final Color LOGO_FRAME = new Color(0.12f, 0.25f, 0.12f, 1f);
+    private static final Color LOGO_SURFACE = new Color(0.94f, 0.91f, 0.73f, 1f);
 
     private final SoulsticeGame game;
 
@@ -30,6 +32,8 @@ public class MainMenuScreen implements Screen {
     private SpriteBatch batch;
     private BitmapFont font;
 
+    // GAME LOGO
+    private Texture logo;
     private Texture background;
 
     private UIButton confirmButton;
