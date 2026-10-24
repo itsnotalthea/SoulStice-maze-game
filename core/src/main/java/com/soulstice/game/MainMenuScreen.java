@@ -11,13 +11,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class MainMenuScreen implements Screen {
 
-    private static final float W = 1024f;
-    private static final float H = 768f;
+    private static final float W = 1920f;
+    private static final float H = 1080f;
 
     private static final Color BG = new Color(0.22f, 0.38f, 0f, 1f);
 
@@ -30,11 +31,7 @@ public class MainMenuScreen implements Screen {
     private BitmapFont font;
 
     private Texture background;
-    private Texture startButtonTexture;
-    private Texture settingsButtonTexture;
-    private Texture quitButtonTexture;
 
-    private UIButton startButton, settingsButton, quitButton;
     private UIButton confirmButton;
 
     private boolean askingName = false;
@@ -58,27 +55,10 @@ public class MainMenuScreen implements Screen {
         batch = new SpriteBatch();
         font = new BitmapFont();
 
-        // LOAD MAIN MENU BACKGROUND
-        background = new Texture(Gdx.files.internal("MainMenu_Background.jpeg"));
+        background = new Texture(Gdx.files.internal("MainMenu_Background.png"));
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        startButtonTexture = new Texture(Gdx.files.internal("start.png"));
-        settingsButtonTexture = new Texture(Gdx.files.internal("settings.png"));
-        quitButtonTexture = new Texture(Gdx.files.internal("quit.png"));
-        startButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        settingsButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        quitButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        float buttonWidth = 220f;
-        float startButtonHeight = buttonWidth * startButtonTexture.getHeight() / startButtonTexture.getWidth();
-        float settingsButtonHeight = buttonWidth * settingsButtonTexture.getHeight() / settingsButtonTexture.getWidth();
-        float quitButtonHeight = buttonWidth * quitButtonTexture.getHeight() / quitButtonTexture.getWidth();
-        float buttonCenterX = W / 2f;
-
-        startButton    = new UIButton(buttonCenterX - buttonWidth / 2f, 365f - startButtonHeight / 2f, buttonWidth, startButtonHeight, "START");
-        settingsButton = new UIButton(buttonCenterX - buttonWidth / 2f, 275f - settingsButtonHeight / 2f, buttonWidth, settingsButtonHeight, "SETTINGS");
-        quitButton     = new UIButton(buttonCenterX - buttonWidth / 2f, 185f - quitButtonHeight / 2f, buttonWidth, quitButtonHeight, "QUIT");
-        confirmButton  = new UIButton(W / 2f - 100f, 260f, 200f, 50f, "CONFIRM");
+        confirmButton = new UIButton(W / 2f - 150f, 300f, 300f, 78f, "CONFIRM");
 
         Gdx.input.setInputProcessor(new InputAdapter() {
             @Override
@@ -142,11 +122,10 @@ public class MainMenuScreen implements Screen {
     }
 
     private void renderMenu() {
-        startButton.update(viewport);
-        settingsButton.update(viewport);
-        quitButton.update(viewport);
+        if (!Gdx.input.justTouched()) return;
+        Vector2 pointer = viewport.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
 
-        if (startButton.isClicked()) {
+        if (contains(pointer, 770f, 485f, 365f, 115f)) {
             if (game.playerName == null || game.playerName.isEmpty()) {
                 askingName = true;
                 cursorAccum = 0f;
@@ -157,19 +136,24 @@ public class MainMenuScreen implements Screen {
             return;
         }
 
-        if (settingsButton.isClicked()) {
+        if (contains(pointer, 570f, 365f, 365f, 115f)) {
             game.showSettings(false);
             return;
         }
 
-        if (quitButton.isClicked()) {
-            Gdx.app.exit();
+        if (contains(pointer, 970f, 365f, 365f, 115f)) {
+            game.showAchievements();
             return;
         }
 
-        startButton.draw(batch, startButtonTexture);
-        settingsButton.draw(batch, settingsButtonTexture);
-        quitButton.draw(batch, quitButtonTexture);
+        if (contains(pointer, 570f, 230f, 365f, 115f)) {
+            game.showTutorial();
+            return;
+        }
+
+        if (contains(pointer, 970f, 230f, 365f, 115f)) {
+            Gdx.app.exit();
+        }
     }
 
     private void renderNamePrompt() {
@@ -182,22 +166,22 @@ public class MainMenuScreen implements Screen {
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         shapes.setColor(Color.WHITE);
-        shapes.rect(W / 2f - 150f, 340f, 300f, 45f);
+        shapes.rect(W / 2f - 310f, 450f, 620f, 90f);
         shapes.end();
 
         batch.begin();
 
-        font.getData().setScale(2f);
+        font.getData().setScale(3f);
         font.setColor(Color.BLACK);
 
         font.draw(
             batch,
             "What should we call you?",
-            W / 2f - 180f,
-            460f
+            W / 2f - 290f,
+            720f
         );
 
-        font.getData().setScale(1.5f);
+        font.getData().setScale(2f);
 
         String shown = nameInput.length() == 0 ? "ENTER NAME"
             : nameInput.toString() + (cursorOn ? "|" : "");
@@ -209,13 +193,17 @@ public class MainMenuScreen implements Screen {
         font.draw(
             batch,
             shown,
-            W / 2f - 140f,
-            372f
+            W / 2f - 260f,
+            510f
         );
 
         batch.end();
 
         confirmButton.draw(shapes, batch, font);
+    }
+
+    private static boolean contains(Vector2 point, float x, float y, float width, float height) {
+        return point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height;
     }
 
     @Override
@@ -238,8 +226,5 @@ public class MainMenuScreen implements Screen {
         font.dispose();
 
         background.dispose();
-        startButtonTexture.dispose();
-        settingsButtonTexture.dispose();
-        quitButtonTexture.dispose();
     }
 }

@@ -20,6 +20,7 @@ public class UIButton {
     public String label;
     private Texture texture;
     private boolean hovered = false;
+    private float hoverScale = HOVER_SCALE;
 
     public UIButton(float x, float y, float width, float height, String label) {
         this.x = x;
@@ -33,6 +34,10 @@ public class UIButton {
     this.texture = texture;
     }
 
+    public void setHoverScale(float hoverScale) {
+        this.hoverScale = hoverScale;
+    }
+
     public void update(Viewport viewport) {
         Vector2 v = viewport.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
         hovered = v.x >= x && v.x <= x + width && v.y >= y && v.y <= y + height;
@@ -44,8 +49,8 @@ public class UIButton {
 
     public void draw(ShapeRenderer sr, SpriteBatch sb, BitmapFont font) {
         if (texture != null) {
-        float drawWidth = width * (hovered ? HOVER_SCALE : 1f);
-        float drawHeight = height * (hovered ? HOVER_SCALE : 1f);
+        float drawWidth = width * (hovered ? hoverScale : 1f);
+        float drawHeight = height * (hovered ? hoverScale : 1f);
 
         sb.begin();
         sb.setColor(Color.WHITE);
@@ -76,8 +81,8 @@ public class UIButton {
 
     public void draw(SpriteBatch sb, Texture texture) {
         sb.begin();
-        float drawWidth = width * (hovered ? HOVER_SCALE : 1f);
-        float drawHeight = height * (hovered ? HOVER_SCALE : 1f);
+        float drawWidth = width * (hovered ? hoverScale : 1f);
+        float drawHeight = height * (hovered ? hoverScale : 1f);
         sb.setColor(NORMAL);
         sb.draw(texture, x - (drawWidth - width) / 2f, y - (drawHeight - height) / 2f + (hovered ? 2f : 0f),
             drawWidth, drawHeight);

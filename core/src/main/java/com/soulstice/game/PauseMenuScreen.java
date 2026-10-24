@@ -1,7 +1,6 @@
 package com.soulstice.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -18,6 +17,8 @@ public class PauseMenuScreen implements Screen {
 
     private static final float W = 1024f;
     private static final float H = 768f;
+    private static final float BUTTON_WIDTH = 190f;
+    private static final float BUTTON_HEIGHT = 62f;
     private static final Color BG  = new Color(0.20f, 0.13f, 0.09f, 1f);
     private static final Color BOX = new Color(1f, 0.95f, 0.78f, 1f);
 
@@ -56,16 +57,17 @@ public class PauseMenuScreen implements Screen {
         optionsButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         quitButtonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        float buttonWidth = 190f;
-        float buttonHeight = 62f;
-        float buttonX = (W - buttonWidth) / 2f;
+        float buttonX = (W - BUTTON_WIDTH) / 2f;
 
-        unpauseButton = new UIButton(buttonX, 420f - buttonHeight / 2f, buttonWidth, buttonHeight, "UNPAUSE");
-        optionsButton = new UIButton(buttonX, 350f - buttonHeight / 2f, buttonWidth, buttonHeight, "OPTIONS");
-        quitButton = new UIButton(buttonX, 280f - buttonHeight / 2f, buttonWidth, buttonHeight, "QUIT");
+        unpauseButton = new UIButton(buttonX, 420f - BUTTON_HEIGHT / 2f, BUTTON_WIDTH, BUTTON_HEIGHT, "UNPAUSE");
+        optionsButton = new UIButton(buttonX, 350f - BUTTON_HEIGHT / 2f, BUTTON_WIDTH, BUTTON_HEIGHT, "OPTIONS");
+        quitButton = new UIButton(buttonX, 280f - BUTTON_HEIGHT / 2f, BUTTON_WIDTH, BUTTON_HEIGHT, "QUIT");
         unpauseButton.setTexture(unpauseButtonTexture);
         optionsButton.setTexture(optionsButtonTexture);
         quitButton.setTexture(quitButtonTexture);
+        unpauseButton.setHoverScale(1f);
+        optionsButton.setHoverScale(1f);
+        quitButton.setHoverScale(1f);
     }
 
     @Override

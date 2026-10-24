@@ -66,7 +66,7 @@ public class LevelMapScreen implements Screen {
         shapes = new ShapeRenderer();
         batch = new SpriteBatch();
         font = new BitmapFont();
-        backgroundTexture = new Texture(Gdx.files.internal("MainMenu_Background.jpeg"));
+        backgroundTexture = new Texture(Gdx.files.internal("MainMenu_Background.png"));
         backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         titleTexture = new Texture(Gdx.files.internal("selectlevel.png"));
         titleTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);

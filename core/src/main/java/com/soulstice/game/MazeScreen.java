@@ -89,6 +89,7 @@ public class MazeScreen implements Screen {
     private boolean timeUpFired = false;
     private boolean skipNextTimerDelta = false;
     private float timeRemaining;
+    private final float timeLimit;
 
     public MazeScreen(int level, Runnable onWin, Runnable onPause, Runnable onTimeUp) {
         this.level = level;
@@ -98,7 +99,8 @@ public class MazeScreen implements Screen {
         this.onWin = onWin;
         this.onPause = onPause;
         this.onTimeUp = onTimeUp;
-        this.timeRemaining = timeLimitForLevel(level);
+        this.timeLimit = timeLimitForLevel(level);
+        this.timeRemaining = timeLimit;
 
         GridPoint bodyStart = gameplay.getBodyPos();
         GridPoint soulStart = gameplay.getSoulPos();
@@ -185,12 +187,12 @@ public class MazeScreen implements Screen {
     }
 
     static int timeLimitForLevel(int level) {
-        if (level <= 3) return 35;
-        if (level <= 6) return 30;
-        if (level <= 9) return 25;
-        if (level <= 12) return 20;
-        if (level <= 15) return 15;
-        return 10;
+        int clampedLevel = Math.max(1, Math.min(21, level));
+        return Math.round(35f - ((clampedLevel - 1) * 15f / 20f));
+    }
+
+    float getElapsedSeconds() {
+        return timeLimit - timeRemaining;
     }
 
     private void drawTimer() {
